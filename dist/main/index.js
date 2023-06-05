@@ -59,27 +59,57 @@ class Command {
         this.message = message;
     }
     toString() {
-        let cmdStr = CMD_STRING + this.command;
-        if (this.properties && Object.keys(this.properties).length > 0) {
-            cmdStr += ' ';
-            let first = true;
-            for (const key in this.properties) {
+
+        if (this.command === 'set-output' || this.command === 'save-state') {
+            let cmdStr = `${this.command}=`;
+            if (this.properties && Object.keys(this.properties).length > 0) {
+              let first = true;
+              for (const key in this.properties) {
                 if (this.properties.hasOwnProperty(key)) {
-                    const val = this.properties[key];
-                    if (val) {
-                        if (first) {
-                            first = false;
+                  const val = this.properties[key];
+                  if (val) {
+                    if (first) {
+                      first = false;
+                    } else {
+                      cmdStr += ',';
+                    }
+                    cmdStr += `${key}=${escapeProperty(val)}`;
+                  }
+                }
+              }
+            }
+            if (this.command === 'save-state') {
+                cmdStr += `" >> $GITHUB_STATE`;
+            } else if (this.command === 'set-output') {
+                cmdStr += `" >> $GITHUB_OUTPUT`;
+            }
+            console.log(`cmdStr = '${cmdStr}'`);
+            return cmdStr;
+        } else {
+            let cmdStr = CMD_STRING + this.command;
+            if (this.properties && Object.keys(this.properties).length > 0) {
+                cmdStr += ' ';
+                let first = true;
+                for (const key in this.properties) {
+                    if (this.properties.hasOwnProperty(key)) {
+                        const val = this.properties[key];
+                        if (val) {
+                            if (first) {
+                                first = false;
+                            }
+                            else {
+                                cmdStr += ',';
+                            }
+                            cmdStr += `${key}=${escapeProperty(val)}`;
                         }
-                        else {
-                            cmdStr += ',';
-                        }
-                        cmdStr += `${key}=${escapeProperty(val)}`;
                     }
                 }
             }
+            cmdStr += `${CMD_STRING}${escapeData(this.message)}`;
+            console.log(`cmdStr = '${cmdStr}'`);
+            return cmdStr;
         }
-        cmdStr += `${CMD_STRING}${escapeData(this.message)}`;
-        return cmdStr;
+
     }
 }
 function escapeData(s) {
