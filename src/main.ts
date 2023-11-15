@@ -12,7 +12,7 @@ async function main(): Promise<void> {
 
     if (await exists(cachePath)) {
       await mkdirP(targetDir)
-      await mv(cachePath, targetPath, { force: true })
+      await cp(cachePath, targetPath, { force: true })
       log.info(`Cache found and restored to ${options.path}`)
       setOutput('cache-hit', true)
     } else {
